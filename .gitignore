@@ -3,3 +3,5 @@
 
 # Maven build files
 target/
+# macOS system files
+.DS_Store
