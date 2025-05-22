@@ -1,14 +1,13 @@
 package com.sayan.Code.Analyzer.controller;
 
 import com.sayan.Code.Analyzer.model.Folder;
+import com.sayan.Code.Analyzer.model.RequestModel.AnalyzeRequest;
 import com.sayan.Code.Analyzer.service.AnalyzeRepoService;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
 
 @RestController
 public class AnalyzeRepoController {
@@ -20,12 +19,10 @@ public class AnalyzeRepoController {
     }
 
     @GetMapping("/analyze")
-    public Folder AnalyzeRepo(@RequestParam String absPath) {
+    public Folder AnalyzeRepo(@RequestBody AnalyzeRequest analyzeRequest) throws IOException {
         // This is the controller for analyzing the repository
         // It will handle the requests and responses for the analysis
-       Folder groupedByParent =  analyzeRepoService.analyzeRepo(absPath);
-
-        return groupedByParent;
+       return analyzeRepoService.analyzeRepo(analyzeRequest);
 
     }
 

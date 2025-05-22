@@ -1,6 +1,7 @@
 package com.sayan.Code.Analyzer.service;
 
 import com.sayan.Code.Analyzer.model.Folder;
+import com.sayan.Code.Analyzer.model.RequestModel.AnalyzeRequest;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
@@ -15,15 +16,9 @@ import java.util.stream.Stream;
 @Service
 public class AnalyzeRepoService {
 
-    private Environment environment;
-
-    public AnalyzeRepoService(Environment environment) {
-        this.environment = environment;
-    }
-
     // This is the service for analyzing the repository
-    public Folder analyzeRepo(String absPath) {
-        Path path = Paths.get(absPath);
+    public Folder analyzeRepo(AnalyzeRequest analyzeRequest) throws IOException {
+        Path path = Paths.get(analyzeRequest.getAbsPath());
 
         try (Stream<Path> stream = Files.walk(path)) {
             // Collect all directories and files
@@ -34,7 +29,7 @@ public class AnalyzeRepoService {
                     ));
 
             // Filter out non-.java files
-            filterFilesByType(groupedByParent);
+            filterFilesByType(groupedByParent , analyzeRequest.getFileExtension());
 
             return buildFolderTree(path, groupedByParent);
 
@@ -43,10 +38,10 @@ public class AnalyzeRepoService {
         }
     }
 
-    private static void filterFilesByType(Map<Path, List<Path>> groupedByParent) {
+    private static void filterFilesByType(Map<Path, List<Path>> groupedByParent , String fileExtension) {
         groupedByParent.replaceAll((key, value) -> value.stream()
                 .filter(Files::isRegularFile)
-                .filter(p -> p.toString().endsWith(".java"))
+                .filter(p -> p.toString().endsWith(fileExtension))
                 .toList()
         );
     }
