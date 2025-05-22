@@ -16,4 +16,8 @@ public class Folder {
     private String name;
     private List<Folder> subFolders;
     private List<String> files;
+
+    public boolean isEmpty() {
+        return (files == null || files.isEmpty()) && (subFolders == null || subFolders.isEmpty());
+    }
 }
