@@ -14,5 +14,6 @@ import java.util.List;
 public class Folder {
 
     private String name;
+    private List<Folder> subFolders;
     private List<String> files;
 }

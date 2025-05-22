@@ -17,10 +17,7 @@ public class AnalyzeRepoService {
     // This is the service for analyzing the repository
     // It will contain the business logic for the analysis
 
-    public Folder  analyzeRepo(String absPath) {
-        // This is the method for analyzing the repository
-        // It will take the absolute path of the repository as input
-        // and return the analysis result as output
+    public Folder analyzeRepo(String absPath) {
         Path path = Paths.get(absPath);
 
         try (Stream<Path> stream = Files.walk(path)) {
@@ -32,38 +29,44 @@ public class AnalyzeRepoService {
                     ));
 
             // Filter out non-.java files
-            groupedByParent.replaceAll((key, value) -> value.stream()
-                    .filter(Files::isRegularFile)
-                    .filter(p -> {
-                        return p.toString().endsWith(".java");
-                    })
-                    .toList()
-            );
+            filterFilesByType(groupedByParent);
 
-           return buildFolderTree(path, groupedByParent);
+            return buildFolderTree(path, groupedByParent);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
 
-
+    private static void filterFilesByType(Map<Path, List<Path>> groupedByParent) {
+        groupedByParent.replaceAll((key, value) -> value.stream()
+                .filter(Files::isRegularFile)
+                .filter(p -> p.toString().endsWith(".java"))
+                .toList()
+        );
     }
 
     private Folder buildFolderTree(Path currentPath, Map<Path, List<Path>> groupedByParent) {
+        // Get files directly under the current folder
+        List<String> files = Optional.ofNullable(groupedByParent.get(currentPath))
+                .orElse(Collections.emptyList())
+                .stream()
+                .map(p -> currentPath.relativize(p).toString())
+                .toList();
 
-        List<String> files2 = new ArrayList<>();
+        // Recursively add subfolders
+        List<Folder> subfolders = groupedByParent.keySet().stream()
+                .filter(p -> p.getParent() != null && p.getParent().equals(currentPath))
+                .map(subfolderPath -> buildFolderTree(subfolderPath, groupedByParent))
+                .filter(Objects::nonNull) // Exclude null subfolders
+                .toList();
 
-        for(Map.Entry<Path, List<Path>> entry : groupedByParent.entrySet()) {
-            List<Path> subfiles = entry.getValue();
-            for(Path subfile : subfiles) {
-                Path relativePath = currentPath.relativize(subfile);
-                files2.add(relativePath.toString());
-                System.out.println(subfile);
-
-            }
+        // If the current folder has no files and no subfolders, return null
+        if (files.isEmpty() && subfolders.isEmpty()) {
+            return null;
         }
 
-        // Return the folder structure with only the folder name and files
-        return new Folder(currentPath.getFileName().toString(), files2);
+        // Set files to null if empty
+        return new Folder(currentPath.getFileName().toString(), subfolders, files.isEmpty() ? null : files);
     }
 }
