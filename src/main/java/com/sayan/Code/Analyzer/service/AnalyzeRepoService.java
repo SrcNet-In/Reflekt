@@ -2,7 +2,6 @@ package com.sayan.Code.Analyzer.service;
 
 import com.sayan.Code.Analyzer.model.Folder;
 import com.sayan.Code.Analyzer.model.RequestModel.AnalyzeRequest;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
