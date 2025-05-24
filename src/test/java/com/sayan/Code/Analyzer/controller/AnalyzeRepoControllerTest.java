@@ -1,6 +1,6 @@
 package com.sayan.Code.Analyzer.controller;
 
-import com.sayan.Code.Analyzer.model.Folder;
+import com.sayan.Code.Analyzer.model.File;
 import com.sayan.Code.Analyzer.model.RequestModel.AnalyzeRequest;
 import com.sayan.Code.Analyzer.service.AnalyzeRepoService;
 import org.junit.jupiter.api.Test;
@@ -13,7 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -37,17 +37,15 @@ class AnalyzeRepoControllerTest {
 
     @Test
     void shouldReturnFolderStructureWhenCalled() throws Exception {
-        Folder mockFolder = new Folder("root", List.of(), List.of("file1.txt", "file2.txt"));
+        File mockFile = new File(1, "root");
 
-        Mockito.when(analyzeRepoService.analyzeRepo(Mockito.any(AnalyzeRequest.class))).thenReturn(mockFolder);
+        Mockito.when(analyzeRepoService.analyzeRepo(Mockito.any(AnalyzeRequest.class))).thenReturn(List.of(mockFile));
 
-        mockMvc.perform(get("/analyze")
+        mockMvc.perform(post("/analyze")
                 .contentType("application/json")
                 .content("{\"absPath\":\"/path/to/repo\",\"fileExtension\":\".java\"}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("root"))
-                .andExpect(jsonPath("$.subFolders").isArray())
-                .andExpect(jsonPath("$.files[0]").value("file1.txt"))
-                .andExpect(jsonPath("$.files[1]").value("file2.txt"));
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].name").value("root"));
     }
 }
