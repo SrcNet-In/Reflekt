@@ -1,8 +1,3 @@
-export type File = {
-    id: number ,
-    name : string
-}
-
 
 export const fileList = [
     { id: 1, name: "src/arcade/docker/DockerPost.java" },

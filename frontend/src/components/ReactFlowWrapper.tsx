@@ -11,10 +11,10 @@ import {
     addEdge,
 } from '@xyflow/react';
 import { useState, useCallback, useEffect } from 'react';
-import {parseFileList} from "../utis/fileParser.ts";
+import { parseFileList } from '../utis/fileParser';
 
 import '@xyflow/react/dist/style.css';
-import {fileList} from "../mediaTypes.ts";
+import { fileList } from '../mediaTypes.ts';
 
 function ReactFlowWrapper() {
     const [nodes, setNodes] = useState<Node[]>([]);
@@ -50,6 +50,7 @@ function ReactFlowWrapper() {
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
+            fitView
         >
             <Background />
             <Controls />
