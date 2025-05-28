@@ -1,9 +1,10 @@
 import {buildTree} from "./buildTree.ts";
 import {calculateWidth} from "./calculateWidth.ts";
 import {layoutTree} from "./layoutTree.ts";
+import type {File} from "../../model/file.ts";
 
 
-export function parseFileList(fileList: { id: number; name: string }[]) {
+export function parseFileList(fileList: File[]) {
     const tree = buildTree(fileList);
     calculateWidth(tree);
 
