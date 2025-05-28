@@ -2,13 +2,12 @@ import {useState} from "react";
 import {getRepoAnalysis} from "../api/AnalyzeRepo.ts";
 import * as React from "react";
 import {parseFileList} from "../utis/fileParser";
+import {useNodeEdgeContext} from "../context/NodeEdgeContext.tsx";
 
-type SearchBarProps = {
-    updateFlow?: (newNodes: any, newEdges: any) => void;
-}
 
-export default function SearchBar (SearchBarProps: SearchBarProps) {
+export default function SearchBar () {
 
+    const { setNodes, setEdges } = useNodeEdgeContext();
     const [absPath, setAbsPath] = useState("");
     const [fileExtension, setFileExtension] = useState("");
     const handleSubmit = async (event: React.FormEvent)=>{
@@ -17,7 +16,8 @@ export default function SearchBar (SearchBarProps: SearchBarProps) {
         try{
             const data = await getRepoAnalysis(absPath , fileExtension);
             const {nodes ,edges} = parseFileList(data);
-            SearchBarProps.updateFlow?.(nodes , edges);
+            setNodes(nodes);
+            setEdges(edges);
             console.log(data);
         }
         catch (error){

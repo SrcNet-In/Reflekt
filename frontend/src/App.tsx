@@ -1,28 +1,17 @@
 import ReactFlowWrapper from './components/ReactFlowWrapper';
 import SearchBar from "./components/SearchBar.tsx";
-import {useState} from "react";
-import type {Edge, Node} from "@xyflow/react";
+import {NodeEdgeProvider} from "./context/NodeEdgeContext.tsx";
 
 
 function App() {
-    const [nodes, setNodes] = useState<Node[]>([]);
-    const [edges, setEdges] = useState<Edge[]>([]);
-    const updateNodesAndEdges = (newNodes: Node[] , newEdges: Edge[]) => {
-        setNodes(newNodes);
-        setEdges(newEdges);
-    }
-
-
-
     return (
-        <>
-            <SearchBar updateFlow = {updateNodesAndEdges}/>
+        <NodeEdgeProvider>
+            <SearchBar/>
             <div style={{ height: '100vh', width: '100vw', display: 'flex' }}>
-                <ReactFlowWrapper nodes={nodes} edges={edges} setEdges={setEdges} setNodes={setNodes} />
+                <ReactFlowWrapper/>
             </div>
-        </>
+        </NodeEdgeProvider>
 
     );
 }
-
 export default App;
