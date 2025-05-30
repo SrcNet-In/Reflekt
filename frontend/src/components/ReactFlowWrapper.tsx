@@ -1,28 +1,42 @@
 import {
     ReactFlow,
+    useReactFlow,
     Controls,
-    Background, type Edge,
+    Background,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
 import {useNodeEdgeContext} from "../context/NodeEdgeContext.tsx";
+import {createNewNode} from "../utis/createNewNode.ts";
 
 
 function ReactFlowWrapper() {
-    const {nodes, edges, setEdges, setNodes, onNodesChange, onEdgesChange, onConnect} = useNodeEdgeContext();
+    const {nodes, edges,setNodes , setEdges, onNodesChange, onEdgesChange, onConnect} = useNodeEdgeContext();
+    const reactFlowInstance = useReactFlow();
+
+
+
+    const handleNewNodeCreation = (event: React.MouseEvent) => {
+        createNewNode(event, reactFlowInstance , setNodes);
+    };
+
 
     return (
-        <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            fitView
-        >
-            <Background/>
-            <Controls/>
-        </ReactFlow>
+        <div style={{ width: '100vw', height: '100vh' }} onDoubleClick={handleNewNodeCreation}>
+            <ReactFlow
+                nodes={nodes}
+                edges={edges}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                onConnect={onConnect}
+                fitView
+                zoomOnDoubleClick={false}
+            >
+                <Background/>
+                <Controls/>
+            </ReactFlow>
+        </div>
+
     );
 }
 
