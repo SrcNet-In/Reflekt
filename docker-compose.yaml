@@ -1,0 +1,32 @@
+services:
+  reflekt:
+    container_name: reflekt
+    image: io.github.sayanroy44617/reflekt:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    develop:
+      watch:
+        - action: rebuild
+          path: src
+    ports:
+      - "8080:8080"
+    networks:
+      - reflekt
+  reflekt-frontend:
+    container_name: reflekt-frontend
+    image: io.github.sayanroy44617/reflekt-frontend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    develop:
+      watch:
+        - action: rebuild
+
+volumes:
+  reflekt:
+    driver: local
+
+networks:
+  reflekt:
+    driver: bridge
