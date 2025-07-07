@@ -11,7 +11,7 @@ import {createNewNode} from "../utis/createNewNode.ts";
 
 
 function ReactFlowWrapper() {
-    const {nodes, edges,setNodes , setEdges, onNodesChange, onEdgesChange, onConnect} = useNodeEdgeContext();
+    const {nodes, edges,setNodes, onNodesChange, onEdgesChange, onConnect} = useNodeEdgeContext();
     const reactFlowInstance = useReactFlow();
 
 

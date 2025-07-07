@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: Reflekt
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+  threads:
+    virtual:
+      enabled: true
+
+
+server:
+  port: 8080
+
+logging:
+  pattern:
+    console: "%d{dd-MM-yyyy HH:mm:ss.SSS}|%X{appName}|%thread|%level|%logger.%M|%X{uid}|%X{uri}|%X{method}|%msg%n"
+  level:
+    root: INFO
+    io.github.sayanroy44617.reflekt: ${APPLICATION_LOGGING_LEVEL:INFO}
