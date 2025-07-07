@@ -17,11 +17,10 @@ services:
     container_name: reflekt-frontend
     image: io.github.sayanroy44617/reflekt-frontend
     build:
-      context: .
-      dockerfile: Dockerfile
-    develop:
-      watch:
-        - action: rebuild
+      context: frontend
+      dockerfile: Dockerfile-frontend
+    ports:
+      - "5173:5173"
 
 volumes:
   reflekt:
