@@ -19,6 +19,8 @@ services:
     build:
       context: frontend
       dockerfile: Dockerfile-frontend
+    environment:
+      - VITE_SPRING_BOOT_BACKEND=http://localhost:8080
     ports:
       - "5173:5173"
 

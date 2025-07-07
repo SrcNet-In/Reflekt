@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 
 @Slf4j
@@ -23,12 +24,17 @@ public class AnalyzeRepoController {
     }
 
     @PostMapping("/analyze")
-    public List<File> AnalyzeRepo(@RequestBody AnalyzeRequest analyzeRequest) throws IOException {
+    public List<File> AnalyzeRepo(@RequestBody Map<String, String> req) throws IOException {
         // This is the controller for analyzing the repository
         // It will handle the requests and responses for the analysis
-        System.out.println("Analyzing repo with path: " + analyzeRequest.getAbsPath());
-       return analyzeRepoService.analyzeRepo(analyzeRequest);
-
+        System.out.println("Received analyze request: " + req);
+        AnalyzeRequest analyzeRequest = new AnalyzeRequest(
+                req.get("absPath"),
+                req.get("fileExtension")
+        );
+        System.out.println("Analyzing repo with path: " + analyzeRequest.absPath());
+        System.out.println("File extension to analyze: " + analyzeRequest.fileExtension());
+        return analyzeRepoService.analyzeRepo(analyzeRequest);
     }
 
 }

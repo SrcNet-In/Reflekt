@@ -65,6 +65,12 @@
 			<optional>true</optional>
 		</dependency>
 
+		<dependency>
+			<groupId>org.eclipse.jgit</groupId>
+			<artifactId>org.eclipse.jgit</artifactId>
+			<version>7.3.0.202506031305-r</version>
+		</dependency>
+
 		<!-- lombok related dependencies-->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
