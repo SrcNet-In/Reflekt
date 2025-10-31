@@ -16,11 +16,11 @@ logging:
     console: "%d{dd-MM-yyyy HH:mm:ss.SSS}|%X{appName}|%thread|%level|%logger.%M|%X{uid}|%X{uri}|%X{method}|%msg%n"
   level:
     root: INFO
-    io.github.sayanroy44617.reflekt: ${APPLICATION_LOGGING_LEVEL:INFO}
+    io.github.sayanroy44617.reflekt: ${APPLICATION_LOGGING_LEVEL:DEBUG}
 
 
 git:
   repo:
     base-path: ${GIT_REPO_BASE_PATH:/tmp/repos}
-    skip-dirs: .git,.idea,target,.vscode
+    skip-dirs: /.git,/.idea,/target,/.vscode,/mvnw,/gradle,/build,/out
     skip-files: .DS_Store

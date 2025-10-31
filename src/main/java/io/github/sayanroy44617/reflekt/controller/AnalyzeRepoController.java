@@ -1,6 +1,7 @@
 package io.github.sayanroy44617.reflekt.controller;
 
 import io.github.sayanroy44617.reflekt.model.File;
+import io.github.sayanroy44617.reflekt.model.FileInfo;
 import io.github.sayanroy44617.reflekt.model.RequestModel.AnalyzeRequest;
 import io.github.sayanroy44617.reflekt.model.RequestModel.GitRepoRequest;
 import io.github.sayanroy44617.reflekt.service.AnalyzeRepoService;
@@ -8,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -44,9 +46,9 @@ public class AnalyzeRepoController {
     }
 
     @PostMapping(path = "/analyzeV2", consumes = "application/json", produces = "application/json")
-    public List<?> AnalyzeRepoV2(@RequestBody(required = false) GitRepoRequest gitRepoRequest) throws GitAPIException {
+    public ResponseEntity<FileInfo> AnalyzeRepoV2(@RequestBody(required = false) GitRepoRequest gitRepoRequest) throws GitAPIException {
         logger.info("Received analyzeV2 request: {}", gitRepoRequest);
-        return analyzeRepoService.analyzeRepo(gitRepoRequest);
+        return ResponseEntity.ok(analyzeRepoService.analyzeRepo(gitRepoRequest));
     }
 
 }

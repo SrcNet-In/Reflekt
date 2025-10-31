@@ -1,4 +1,7 @@
 package io.github.sayanroy44617.reflekt.model.RequestModel;
 
-public record GitRepoRequest(String url, String branch) implements java.io.Serializable {
+import java.util.Set;
+
+public record GitRepoRequest(String url, String branch, Set<String> skipDirs,
+                             Set<String> skipFiles) implements java.io.Serializable {
 }

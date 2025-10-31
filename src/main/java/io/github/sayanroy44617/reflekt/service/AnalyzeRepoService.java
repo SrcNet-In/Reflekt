@@ -1,6 +1,9 @@
 package io.github.sayanroy44617.reflekt.service;
 
 import io.github.sayanroy44617.reflekt.model.File;
+import io.github.sayanroy44617.reflekt.model.FileInfo;
+import io.github.sayanroy44617.reflekt.model.NodeInfo;
+import io.github.sayanroy44617.reflekt.model.NodeType;
 import io.github.sayanroy44617.reflekt.model.RequestModel.AnalyzeRequest;
 import io.github.sayanroy44617.reflekt.model.RequestModel.GitRepoRequest;
 import org.eclipse.jgit.api.Git;
@@ -13,9 +16,8 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.nio.file.Paths;
+import java.util.*;
 import java.util.stream.Stream;
 
 @Service
@@ -32,26 +34,77 @@ public class AnalyzeRepoService {
     @Value("#{'${git.repo.skip-files}'.split(',')}")
     private Set<String> gitSkipFiles;
 
-    public List<?> analyzeRepo(GitRepoRequest gitRepoRequest) throws GitAPIException {
+    public FileInfo analyzeRepo(GitRepoRequest gitRepoRequest) throws GitAPIException {
         if (!isValid(gitRepoRequest)) {
             throw new IllegalArgumentException("Invalid GitRepoRequest");
         }
         Path repoPath = getLatestRepo(gitRepoRequest);
         logger.info("Analyzing repository at path: {}", repoPath);
-        logger.info("Skipping directories: {}", gitSkipDirs);
-        logger.info("Skipping files: {}", gitSkipFiles);
-        try (Stream<Path> stream = Files.walk(repoPath)) {
-            return stream.filter(Files::isRegularFile)
-                    .peek(path -> logger.debug("Found file: {}", path))
-                    .filter(path -> !gitSkipDirs.contains(path.getFileName().toString()))
-                    .filter(path -> !gitSkipFiles.contains(path.getFileName().toString()))
-                    .map(repoPath::relativize)
-                    .map(path -> new File(0, path.toString()))
-                    .toList();
+        Set<String> skipDirs = mergeSets(gitSkipDirs, gitRepoRequest.skipDirs());
 
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        Set<String> skipFiles = mergeSets(gitSkipFiles, gitRepoRequest.skipFiles());
+
+        List<NodeInfo> nodes = crawl(repoPath, 0, 0,
+                "", "",
+                skipDirs, skipFiles, new ArrayList<>());
+
+        return new FileInfo(
+                gitRepoRequest.url(),
+                nodes
+        );
+    }
+
+    private List<NodeInfo> crawl(Path repoPath, int level, int parentId, String relativePath, String parentPath,
+                                 Set<String> skipDirs, Set<String> skipFiles, List<NodeInfo> nodes) {
+        Path fullPath = Paths.get(repoPath.toString(), relativePath);
+        logger.debug("crawling path: {}", fullPath);
+        for (java.io.File file : Objects.requireNonNull(fullPath.toFile().listFiles())) {
+            int id = nodes.size() + 1;
+            String fileName = file.getName();
+            String currPath = relativePath + "/" + fileName;
+            if (file.isDirectory()) {
+                if (skipDirs.contains(currPath))
+                    continue;
+                logger.debug("found({}) directory at : {}, at path {}", id, file.getName(), currPath);
+                NodeInfo dirNode = new NodeInfo(
+                        id,
+                        parentId,
+                        level,
+                        currPath,
+                        parentPath,
+                        fileName,
+                        NodeType.DIRECTORY
+                );
+                nodes.add(dirNode);
+                crawl(repoPath, level + 1, id, currPath, fileName, skipDirs, skipFiles, nodes);
+            } else {
+                if (skipFiles.contains(currPath))
+                    continue;
+                logger.debug("found({}) file at : {}, at path {}", id, file.getName(), currPath);
+                NodeInfo fileNode = new NodeInfo(
+                        id,
+                        parentId,
+                        level,
+                        currPath,
+                        parentPath,
+                        fileName,
+                        NodeType.FILE
+                );
+                nodes.add(fileNode);
+            }
         }
+        return nodes;
+    }
+
+    @SafeVarargs
+    private static <T> Set<T> mergeSets(Set<T>... sets) {
+        Set<T> mergedSet = new HashSet<>();
+        for (Set<T> set : sets) {
+            if (set != null && !set.isEmpty()) {
+                mergedSet.addAll(set);
+            }
+        }
+        return mergedSet;
     }
 
     private boolean isValid(GitRepoRequest gitRepoRequest) {
