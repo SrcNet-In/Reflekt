@@ -5,6 +5,7 @@
 
 
 import ExplorerSidebar from "./components/ExplorerSidebar.tsx";
+import FlowCanvas from "./components/FlowCanvas.tsx";
 
 function App() {
     function handleLayoutChange() {
@@ -12,20 +13,11 @@ function App() {
     }
     let direction: "DOWN" | "RIGHT" = "DOWN";
     return (
-        // <NodeEdgeProvider>
-        //     <SearchBar/>
-        //     <div style={{ height: '100vh', width: '100vw', display: 'flex' }}>
-        //         <ReactFlowProvider>
-        //             <ReactFlowWrapper/>
-        //         </ReactFlowProvider>
-        //
-        //     </div>
-        // </NodeEdgeProvider>
-
-        <div>
+        <div className="h-screen flex">
             <ExplorerSidebar
                 onLayoutChange={handleLayoutChange}
                 currentDirection={direction}/>
+            <FlowCanvas/>
         </div>
 
     );
