@@ -1,11 +1,9 @@
 package io.github.sayanroy44617.reflekt.service;
 
-import io.github.sayanroy44617.reflekt.model.File;
-import io.github.sayanroy44617.reflekt.model.FileInfo;
-import io.github.sayanroy44617.reflekt.model.NodeInfo;
-import io.github.sayanroy44617.reflekt.model.NodeType;
+import io.github.sayanroy44617.reflekt.model.*;
 import io.github.sayanroy44617.reflekt.model.RequestModel.AnalyzeRequest;
 import io.github.sayanroy44617.reflekt.model.RequestModel.GitRepoRequest;
+import io.github.sayanroy44617.reflekt.model.RequestModel.NodeContentRequest;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.slf4j.Logger;
@@ -52,6 +50,35 @@ public class AnalyzeRepoService {
                 gitRepoRequest.url(),
                 nodes
         );
+    }
+
+    public Object fetchContent(NodeContentRequest nodeContentRequest, boolean raw) {
+        if (!isValid(nodeContentRequest)) {
+            throw new IllegalArgumentException("Invalid Node content request");
+        }
+        Path repoPath = buildRepoPath(nodeContentRequest.url());
+        Path filePath = Paths.get(repoPath.toString(), nodeContentRequest.path());
+        if (!Files.exists(filePath)) {
+            throw new IllegalArgumentException("File does not exist at path: " + filePath);
+        }
+        try {
+            String content = Files.readString(filePath);
+            if (raw) {
+                return content;
+            }
+            return new NodeContent(content);
+        } catch (IOException e) {
+            logger.error("Failed to read file at path: {}", filePath, e);
+            throw new RuntimeException("Failed to read file", e);
+        }
+    }
+
+    private boolean isValid(NodeContentRequest nodeContentRequest) {
+        return nodeContentRequest != null
+                && nodeContentRequest.url() != null
+                && !nodeContentRequest.url().isBlank()
+                && nodeContentRequest.path() != null
+                && !nodeContentRequest.path().isBlank();
     }
 
     private List<NodeInfo> crawl(Path repoPath, int level, int parentId, String relativePath, String parentPath,
@@ -114,14 +141,7 @@ public class AnalyzeRepoService {
     }
 
     private Path getLatestRepo(GitRepoRequest gitRepoRequest) {
-        String repoDir;
-        String[] repoParts = gitRepoRequest.url().split("/");
-        if (gitRepoRequest.url().startsWith("http") || gitRepoRequest.url().startsWith("git"))
-            repoDir = repoParts[repoParts.length - 2];
-        else
-            throw new IllegalArgumentException("Invalid GitRepoRequest");
-        String repoName = repoParts[repoParts.length - 1];
-        Path repoPath = Path.of(gitRepoBasePath, repoDir, repoName);
+        Path repoPath = buildRepoPath(gitRepoRequest.url());
         if (Files.exists(repoPath)) {
             logger.info("Repository already exists at path: {}", repoPath);
             try (Git git = Git.open(repoPath.toFile())) {
@@ -148,6 +168,23 @@ public class AnalyzeRepoService {
             }
         }
         return repoPath;
+    }
+
+    private Path buildRepoPath(String url) {
+        String[] repoParts = url.split("/");
+        if (!isValidGitUrl(url) || repoParts.length < 2)
+            throw new IllegalArgumentException("Invalid GitRepoRequest");
+        String repoDir = repoParts[repoParts.length - 2];
+        String repoName = repoParts[repoParts.length - 1];
+        return Path.of(gitRepoBasePath, repoDir, repoName);
+    }
+
+    private boolean isValidGitUrl(String url) {
+        return url != null &&
+                (url.startsWith("http://")
+                        || url.startsWith("https://")
+                        || url.startsWith("git@")
+                );
     }
 
     // This is the service for analyzing the repository
