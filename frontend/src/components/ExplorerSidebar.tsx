@@ -9,7 +9,7 @@ interface ExplorerSidebarProps {
 function ExplorerSidebar({onLayoutChange, currentDirection}: ExplorerSidebarProps) {
     return (
         <div className="w-[280px] p-4 flex flex-col bg-gray-800 border-r border-gray-700 overflow-y-auto flex-shrink-0 h-full">
-            <h2 className="text-xl font-bold mb-4 text-white">⚙️ Repo Explorer</h2>
+            <h2 className="text-xl font-bold mb-4 text-white">⚙️ Reflekt</h2>
             <input
                 type="text"
                 placeholder="Search files or commits..."

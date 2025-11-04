@@ -1,49 +1,32 @@
 import React, { useCallback, useEffect, useState } from 'react';
-
+import type { RawFileNode } from '../model/RawFileNode';
 // --- FIX: Import only TYPES from reactflow ---
 import type {
-    Node,
-    Edge,
     NodeProps,
 } from 'reactflow';
 import '@xyflow/react/dist/style.css';
-import {ReactFlowProvider} from "@xyflow/react";
-import {useNodesState} from "@xyflow/react";
-import {useEdgesState , useReactFlow} from "@xyflow/react";
-import {ReactFlow} from "@xyflow/react";
-import {MiniMap} from "@xyflow/react";
-import {Controls} from "@xyflow/react";
-import {Handle} from "@xyflow/react";
+import {
+    ReactFlowProvider,
+    useNodesState,
+    useEdgesState,
+    useReactFlow,
+    ReactFlow,
+    MiniMap,
+    Position,
+    Controls,
+    Handle
+} from '@xyflow/react';
 
-// --- FIX: Import ELK from a bundled CDN source ---
-// This will resolve the "ELK is not defined" runtime error.
+import type { Node, Edge } from '@xyflow/react';
+
+
 import ELK from 'elkjs/lib/elk.bundled.js';
+import {getRepoAnalysisV2} from "../api/AnalyzeRepo.ts";
 
 
-// --- FIX: Manually declare Position enum ---
-// Since we can't import it as a value, we recreate it.
-const Position = {
-    Top: 'top',
-    Bottom: 'bottom',
-    Left: 'left',
-    Right: 'right',
-} as const;
-
-
-// --- TYPESCRIPT INTERFACES ---
-
-/** Raw data structure from your API */
-interface RawFileNode {
-    id: number;
-    parent_id: number;
-    level: number;
-    file_name: string;
-    node_type: 'DIRECTORY' | 'FILE';
-    full_path?: string;
-}
 
 /** Custom data attached to the xyflow Node */
-interface FileNodeData {
+interface FileNodeData extends Record<string, unknown>{
     label: string;
     nodeType: 'DIRECTORY' | 'FILE';
     fullPath?: string;
@@ -196,7 +179,8 @@ const transformData = (data: RawFileNode[]): { nodes: FileTreeNode[], edges: Edg
 // --- PROPS FOR THE CANVAS ---
 
 interface FlowCanvasProps {
-    initialData?: RawFileNode[];
+    initialData: RawFileNode[];
+    onSubmitRepo: (data: RawFileNode[]) => void;
     currentDirection: 'DOWN' | 'RIGHT';
     onNodeClick: (node: FileTreeNode) => void; // Callback for the detail panel
 }
@@ -204,25 +188,16 @@ interface FlowCanvasProps {
 // --- MODULE 2: FlowCanvas (Wrapped in useReactFlow for layout hook access) ---
 
 
-const defaultInitialData: RawFileNode[] = [
-    { id: 1, parent_id: 0, level: 0, file_name: 'golang-helper', node_type: 'DIRECTORY', full_path: '/' },
-    { id: 2, parent_id: 1, level: 1, file_name: 'basics', node_type: 'DIRECTORY', full_path: '/basics' },
-    { id: 3, parent_id: 2, level: 2, file_name: 'di', node_type: 'DIRECTORY', full_path: '/basics/di' },
-    { id: 4, parent_id: 3, level: 3, file_name: 'manual_di.go', node_type: 'FILE', full_path: '/basics/di/manual_di.go' },
-    { id: 5, parent_id: 3, level: 3, file_name: 'di_test.go', node_type: 'FILE', full_path: '/basics/di/di_test.go' },
-    { id: 6, parent_id: 2, level: 2, file_name: 'serializing', node_type: 'DIRECTORY', full_path: '/basics/serializing' },
-    { id: 7, parent_id: 6, level: 3, file_name: 'json_example.go', node_type: 'FILE', full_path: '/basics/serializing/json_example.go' },
-    { id: 8, parent_id: 6, level: 3, file_name: 'xml_example.go', node_type: 'FILE', full_path: '/basics/serializing/xml_example.go' },
-    { id: 9, parent_id: 1, level: 1, file_name: 'README.md', node_type: 'FILE', full_path: '/README.md' },
-];
-
-
-const FlowCanvasInternal: React.FC<FlowCanvasProps> = ({ initialData = defaultInitialData, currentDirection, onNodeClick }) => {
+const FlowCanvasInternal: React.FC<FlowCanvasProps> = ({ initialData ,onSubmitRepo ,currentDirection, onNodeClick }) => {
     // @ts-ignore
     const [nodes, setNodes, onNodesChange] = useNodesState<FileTreeNode>([]);
-    const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+    const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
     const { fitView } = useReactFlow();
     const [isLoading, setIsLoading] = useState(true);
+
+
+    const [url, setUrl] = useState("")
+    const [branch, setBranch] = useState("");
 
     // This logic runs the layout algorithm
     const runLayout = useCallback(async (data: RawFileNode[], direction: 'DOWN' | 'RIGHT') => {
@@ -246,8 +221,42 @@ const FlowCanvasInternal: React.FC<FlowCanvasProps> = ({ initialData = defaultIn
         onNodeClick(node);
     }, [onNodeClick]);
 
+    const handleV2Submit = async (event: React.FormEvent)=>{
+        event.preventDefault();
+        console.log("function is getting called")
+        try{
+            const data = await getRepoAnalysisV2(url , branch);
+            onSubmitRepo(data.nodes)
+            console.log(data);
+        }
+        catch (error){
+            console.error("Error fetching repo details:", error);
+        }
+    }
+
     return (
         <div className="flex-1 relative bg-gray-900 h-full w-full">
+            <div className="absolute top-0 left-0 z-10 flex w-full items-center justify-start bg-gray-800 border-b border-gray-700 px-6 py-3">
+                <div className="flex items-center gap-2 w-full max-w-md">
+                    <input
+                        type="text"
+                        onChange={(e) => setUrl(e.target.value)}
+                        placeholder="Search repository..."
+                        className="flex-1 rounded-lg bg-gray-700 border border-gray-600 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    />
+                    <input
+                        type="text"
+                        onChange={(e) => setBranch(e.target.value)}
+                        placeholder="Branch..."
+                        className="flex-1 rounded-lg bg-gray-700 border border-gray-600 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    />
+                    <button className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition" type={'submit'}
+                    onClick={handleV2Submit}>
+                        Search
+                    </button>
+                </div>
+            </div>
+
             {isLoading && (
                 <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-900/80 text-white text-xl">
                     Calculating Layout...
@@ -259,7 +268,7 @@ const FlowCanvasInternal: React.FC<FlowCanvasProps> = ({ initialData = defaultIn
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
                 onNodeClick={handleNodeClick}
-                nodeTypes={nodeTypes}
+                nodeTypes={nodeTypes as any}
                 fitView
                 defaultEdgeOptions={{
                     style: { strokeWidth: 2 },
