@@ -1,12 +1,14 @@
 import FileItem from "../model/FileItem.tsx";
+import type {RawFileNode} from "../model/RawFileNode.tsx";
 
 interface ExplorerSidebarProps {
     onLayoutChange: (direction: "DOWN" | "RIGHT") => void;
     currentDirection: "DOWN" | "RIGHT";
+    initialData: RawFileNode[];
 }
 
 
-function ExplorerSidebar({onLayoutChange, currentDirection}: ExplorerSidebarProps) {
+function ExplorerSidebar({onLayoutChange, currentDirection , initialData}: ExplorerSidebarProps) {
     return (
         <div className="w-[280px] p-4 flex flex-col bg-gray-800 border-r border-gray-700 overflow-y-auto flex-shrink-0 h-full">
             <h2 className="text-xl font-bold mb-4 text-white">⚙️ Reflekt</h2>
@@ -51,26 +53,14 @@ function ExplorerSidebar({onLayoutChange, currentDirection}: ExplorerSidebarProp
             <div className="flex-1 min-h-0">
                 <h3 className="text-lg font-semibold mb-2 text-gray-300">Repository Files</h3>
                 <div className="text-gray-300 space-y-0.5">
-                    {/* File Tree Structure */}
-                    <FileItem name="golang-helper" isDir level={0} />
-                    <FileItem name="README.md" level={1} />
-                    <FileItem name="go.mod" level={1} />
-                    <FileItem name="basics" isDir level={1} />
-                    <FileItem name="di" isDir level={2} />
-                    <FileItem name="manual_di.go" level={3} isActive />
-                    <FileItem name="di_test.go" level={3} />
-                    <FileItem name="serializing" isDir level={2} />
-                    <FileItem name="json_example.go" level={3} />
-                    <FileItem name="xml_example.go" level={3} />
-                    <FileItem name="testings" isDir level={2} />
-
-                    {/* More mock content for scrolling demonstration */}
-                    <FileItem name="utils" isDir level={1} />
-                    <FileItem name="http" isDir level={1} />
-                    <FileItem name="server.go" level={1} />
-                    <FileItem name="db" isDir level={1} />
-                    <FileItem name="migrations" isDir level={2} />
-                    <FileItem name="schema.sql" level={3} />
+                    {initialData.map((item) => (
+                        <FileItem
+                            key={item.id}
+                            name={item.file_name}
+                            isDir={item.node_type === 'DIRECTORY'}
+                            level={item.level}
+                        />
+                    ))}
                 </div>
             </div>
 

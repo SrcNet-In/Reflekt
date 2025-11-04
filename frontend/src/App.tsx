@@ -36,7 +36,9 @@ function App() {
         <div className="h-screen flex">
             <ExplorerSidebar
                 onLayoutChange={handleLayoutChange}
-                currentDirection={direction}/>
+                currentDirection={direction}
+                initialData = {fileTreeData}/>
+
             <FlowCanvas
                 initialData={fileTreeData}
                 onSubmitRepo={setFileTreeData}
