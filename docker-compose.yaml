@@ -2,6 +2,8 @@ services:
   reflekt:
     container_name: reflekt
     image: io.github.sayanroy44617/reflekt:latest
+    environment:
+      - GIT_REPO_BASE_PATH=/reflekt-data/repos
     build:
       context: .
       dockerfile: Dockerfile
@@ -11,8 +13,11 @@ services:
           path: src
     ports:
       - "8080:8080"
+    volumes:
+          - reflekt:/reflekt-data
     networks:
       - reflekt
+
   reflekt-frontend:
     container_name: reflekt-frontend
     image: io.github.sayanroy44617/reflekt-frontend
