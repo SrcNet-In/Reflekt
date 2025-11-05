@@ -18,6 +18,7 @@ import {
 } from '@xyflow/react';
 
 import type { Node, Edge } from '@xyflow/react';
+import DetailPanel from "./DetailPanel.tsx";
 
 
 import ELK from 'elkjs/lib/elk.bundled.js';
@@ -289,7 +290,10 @@ const FlowCanvasInternal: React.FC<FlowCanvasProps> = ({ initialData ,onSubmitRe
 
 const FlowCanvas: React.FC<FlowCanvasProps> = (props) => (
     <ReactFlowProvider>
-        <FlowCanvasInternal {...props} />
+        <div className="flex-1 flex flex-col relative overflow-hidden">
+            <FlowCanvasInternal {...props} />
+            <DetailPanel selectedNode={null}/>
+        </div>
     </ReactFlowProvider>
 );
 
